@@ -27,20 +27,25 @@ function get_cleaned_up_pages() {
 function get_cleaned_up_page($request) {
 
 	$id = $request['id'];
-	$page = get_post($id);
+	$page = get_post(apply_filters('wpml_object_id', $id, 'page'));
 
-	$cleaned_up_page = create_object_from_another_object_properties([
-		'ID',
-		'post_author',
-		'post_status',
-		'post_name',
-		'post_date',
-		'post_title',
-		'post_parent'
-	], $page);
-	$cleaned_up_page['post_content'] = nl2br($page->post_content);
+	if($page) {
+		$cleaned_up_page = create_object_from_another_object_properties([
+			'ID',
+			'post_author',
+			'post_status',
+			'post_name',
+			'post_date',
+			'post_title',
+			'post_parent'
+		], $page);
+		$cleaned_up_page['post_content'] = nl2br($page->post_content);
+		return rest_ensure_response($cleaned_up_page);
+	}
+	else {
+		return rest_ensure_response(new WP_Error( '404', 'Page content not found in the requested lang.', array( 'status' => 404 )));
+	}
 
-	return rest_ensure_response($cleaned_up_page);
 }
 
 

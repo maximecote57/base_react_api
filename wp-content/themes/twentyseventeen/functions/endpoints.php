@@ -149,4 +149,5 @@ function add_settings_endpoint() {
 
 add_action( 'rest_api_init', 'add_pages_endpoint' );
 add_action( 'rest_api_init', 'add_page_endpoint' );
-add_action( 'rest_api_init', 'add_menus_endpoint' );add_action( 'rest_api_init', 'add_settings_endpoint' );
+add_action( 'rest_api_init', 'add_menus_endpoint' );
+add_action( 'rest_api_init', 'add_settings_endpoint' );

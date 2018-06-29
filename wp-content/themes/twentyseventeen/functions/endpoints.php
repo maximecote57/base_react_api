@@ -87,6 +87,24 @@ function get_menus() {
 	return rest_ensure_response($cleaned_up_menus);
 }
 
+function get_site_settings() {
+
+	global $sitepress;
+	$available_langs = icl_get_languages('skip_missing=0&orderby=KEY&order=DIR&link_empty_to=str');
+
+	$settings = [];
+	$settings['defaultLang'] = $sitepress->get_default_language();
+	$settings['availableLangs'] = icl_get_languages('skip_missing=0&orderby=KEY&order=DIR&link_empty_to=str');
+	$settings['homepageIds'] = [];
+
+	foreach ($available_langs as $lang_key=>$lang_object) {
+		$settings['homepageIds'][$lang_key] = apply_filters( 'wpml_object_id', get_option( 'page_on_front' ), 'post', false, $lang_key);
+	}
+
+	return rest_ensure_response($settings);
+
+}
+
 function add_pages_endpoint() {
 
 	register_rest_route( 'reptile', '/pages', array(
@@ -120,6 +138,15 @@ function add_menus_endpoint() {
 
 }
 
+function add_settings_endpoint() {
+
+	register_rest_route( 'reptile', '/settings', array(
+		'methods' => WP_REST_Server::READABLE,
+		'callback' => 'get_site_settings',
+	) );
+
+}
+
 add_action( 'rest_api_init', 'add_pages_endpoint' );
 add_action( 'rest_api_init', 'add_page_endpoint' );
-add_action( 'rest_api_init', 'add_menus_endpoint' );
+add_action( 'rest_api_init', 'add_menus_endpoint' );add_action( 'rest_api_init', 'add_settings_endpoint' );

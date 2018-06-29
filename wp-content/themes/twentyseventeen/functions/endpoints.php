@@ -4,6 +4,7 @@ function get_cleaned_up_pages() {
 
 	$cleaned_up_pages = [];
 	$pages = get_pages();
+	$homepage_id = (int)get_option( 'page_on_front' );
 
 	foreach($pages as $page) {
 
@@ -16,6 +17,10 @@ function get_cleaned_up_pages() {
 			'post_parent'
 		], $page);
 		$cleaned_up_page['template'] = get_field('template', $page->ID);
+
+		if($cleaned_up_page['ID'] === $homepage_id) {
+			$cleaned_up_page['post_name'] = '';
+		}
 
 		$cleaned_up_pages[] = $cleaned_up_page;
 
@@ -53,6 +58,7 @@ function get_menus() {
 
 	$cleaned_up_menus = [];
 	$menus = array_unique(get_terms( 'nav_menu'), SORT_REGULAR);
+	$available_langs = icl_get_languages('skip_missing=0&orderby=KEY&order=DIR&link_empty_to=str');
 
 	foreach ($menus as $menu) {
 
@@ -65,13 +71,27 @@ function get_menus() {
 
 		foreach ($menu_items as $menu_item) {
 
+			$page_id = (int)$menu_item->object_id;
+
 			$page = create_object_from_another_object_properties([
 				'title',
 				'menu_item_parent',
 				'menu_order'
 			], $menu_item);
-			$page['slug'] = get_post_field( 'post_name', $menu_item->object_id);
-			$page['ID'] = $menu_item->object_id;
+
+			$page['slugs'] = [];
+			foreach ($available_langs as $lang_key=>$lang_object) {
+
+				if(apply_filters( 'wpml_object_id', $menu_item->object_id, 'post', false, $lang_key) === apply_filters( 'wpml_object_id', get_option( 'page_on_front' ), 'post', false, $lang_key)) {
+					$page['slugs'][$lang_key] = "";
+				}
+				else {
+					$slug = get_post_field('post_name', apply_filters( 'wpml_object_id', $menu_item->object_id, 'post', false, $lang_key));
+					$page['slugs'][$lang_key] = $slug !== '' ? $slug : null;
+				}
+			}
+
+			$page['ID'] = $page_id;
 
 			if(get_post_status($menu_item->object_id) !== 'private') {
 				$cleaned_up_menu['pages'][] = $page;

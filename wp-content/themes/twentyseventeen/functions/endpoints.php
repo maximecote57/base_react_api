@@ -5,6 +5,7 @@ function get_cleaned_up_pages() {
 	$cleaned_up_pages = [];
 	$pages = get_pages();
 	$homepage_id = (int)get_option( 'page_on_front' );
+	$available_langs = icl_get_languages('skip_missing=0&orderby=KEY&order=DIR&link_empty_to=str');
 
 	foreach($pages as $page) {
 
@@ -17,9 +18,17 @@ function get_cleaned_up_pages() {
 			'post_parent'
 		], $page);
 		$cleaned_up_page['template'] = get_field('template', $page->ID);
+		$cleaned_up_page['slugs'] = [];
 
-		if($cleaned_up_page['ID'] === $homepage_id) {
-			$cleaned_up_page['post_name'] = '';
+		foreach ($available_langs as $lang_key=>$lang_object) {
+
+			if(apply_filters( 'wpml_object_id', $cleaned_up_page['ID'], 'post', false, $lang_key) === apply_filters( 'wpml_object_id', $homepage_id, 'post', false, $lang_key)) {
+				$cleaned_up_page['slugs'][$lang_key] = "";
+			}
+			else {
+				$slug = get_post_field('post_name', apply_filters( 'wpml_object_id', $cleaned_up_page['ID'], 'post', false, $lang_key));
+				$cleaned_up_page['slugs'][$lang_key] = $slug !== '' ? $slug : null;
+			}
 		}
 
 		$cleaned_up_pages[] = $cleaned_up_page;

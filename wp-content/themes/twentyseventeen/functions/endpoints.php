@@ -52,7 +52,7 @@ function get_cleaned_up_page($request) {
 function get_menus() {
 
 	$cleaned_up_menus = [];
-	$menus = get_terms( 'nav_menu', array( 'hide_empty' => true ));
+	$menus = array_unique(get_terms( 'nav_menu'), SORT_REGULAR);
 
 	foreach ($menus as $menu) {
 
